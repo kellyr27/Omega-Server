@@ -1,0 +1,11 @@
+{
+  "name": "omega-server",
+  "version": "1.0.0",
+  "description": "Server for my personal projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Kelly Ristovsky",
+  "license": "ISC"
+}
