@@ -21,8 +21,6 @@ describe('User Routes', () => {
         const user = await User.findOne({ username: 'testuser' });
         expect(user).not.toBeNull();
 
-        // Assertions about the response
-        expect(response.body.message).toEqual('Account created successfully');
     });
 
     test('Should not register a new user with an existing username', async () => {

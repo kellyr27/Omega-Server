@@ -4,7 +4,7 @@
   "description": "Server for my personal projects",
   "main": "app.js",
   "scripts": {
-    "test": "set NODE_ENV=test&& jest --config ./projects/climbingLog/tests/jest.config.js --detectOpenHandles --runInBand"
+    "testClimbingLog": "set NODE_ENV=test&& jest --config ./projects/climbingLog/tests/jest.config.js --detectOpenHandles --runInBand"
   },
   "author": "Kelly Ristovsky",
   "license": "ISC",
