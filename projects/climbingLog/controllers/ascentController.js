@@ -116,7 +116,6 @@ exports.deleteAscent = [
  * When creating a new ascent, this will prefill the date field with the date of the last ascent 
  * recorded if recorded within the last 24 hours or the current date if not.
  */
-//TODO: Test if function works as expected
 exports.prefillAscentDate = [
     async (req, res, next) => {
     

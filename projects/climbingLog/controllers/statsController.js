@@ -36,7 +36,6 @@ exports.getGradePyramid = [
                 }
                 gradePyramid[route.grade][route.ascents[0].tickType] += 1;
             })
-            console.log('4')
             res.status(200).json(gradePyramid);
         } catch (error) {
             next(error)
@@ -65,8 +64,6 @@ exports.getPerformanceRating = [
                 'Medium': 1,
                 'High': 0
             }
-
-            //TODO: Add points for more climbs in a session
 
             // Get all routes for the user and their ascents
             const routes = await Route.find({ user: req.user._id }).populate('ascents')
@@ -121,8 +118,6 @@ exports.getPerformanceRating = [
             
                 return formatted;
             }, {});
-
-            console.log(performanceRatingsFormatted)
 
             res.status(200).json(performanceRatingsFormatted);
 

@@ -32,7 +32,7 @@ const startServer = async () => {
 
         return server
     } catch (error) {
-        console.error('Could not start server', error);
+        console.error('Could not start server');
         process.exit(1);
     }
 };

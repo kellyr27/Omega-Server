@@ -2,8 +2,6 @@ const Ascent = require('../models/ascentModel');
 const Route = require('../models/routeModel');
 const CustomError = require('../utils/CustomError');
 
-// TODO Add user
-// TODO Error checking that route exists for that user only
 exports.findOrCreateRoute = async (routeData, userId) => {
 
     let route = await Route.findOne({ name: routeData.name, user: userId});
