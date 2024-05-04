@@ -1,16 +1,24 @@
 const express = require('express');
 const app = express();
 const morgan = require('morgan');
+const setUpClimbingLogApp = require('./projects/climbingLog/app');
 
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true })); 
-app.use(morgan('tiny'));
+// TODO: Stop long error messages from printing to console
+const setupApp = () => {
 
+    // Middleware
+    const corsHeadersMiddleware = require('./middleware/corsHeadersMiddleware');
+    const errorHandlerMiddleware = require('./middleware/errorHandlerMiddleware');
 
-if (process.env.NODE_ENV !== 'test') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+    app.use(corsHeadersMiddleware);
+	app.use(errorHandlerMiddleware);
+    app.use(express.json());
+    app.use(morgan('tiny'));
+
+    // Set up my project apps
+    setUpClimbingLogApp(app)
+
+    return app
 }
 
+module.exports = setupApp;
