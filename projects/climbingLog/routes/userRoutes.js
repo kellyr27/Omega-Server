@@ -11,4 +11,7 @@ router.post('/register', ...userController.register)
 // Login
 router.post('/login', ...userController.login);
 
+// Update Password - currently turned off
+// router.put('/update-password', ...userController.updatePassword);
+
 module.exports = router;
