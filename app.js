@@ -8,10 +8,8 @@ const setupApp = () => {
 
     // Middleware
     const corsHeadersMiddleware = require('./middleware/corsHeadersMiddleware');
-    const errorHandlerMiddleware = require('./middleware/errorHandlerMiddleware');
 
     app.use(corsHeadersMiddleware);
-	app.use(errorHandlerMiddleware);
     app.use(express.json());
     app.use(morgan('tiny'));
 

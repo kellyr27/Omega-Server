@@ -5,18 +5,25 @@ const getAscentsObjects = require('../uploadDb/uploadDb');
 
 
 exports.findAscent = async (ascentId, userId) => {
-    const ascent = await Ascent.findById(ascentId).populate('route')
+    try {
+        const ascent = await Ascent.findById(ascentId).populate('route');
 
-    if (!ascent) {
-        throw new CustomError('No ascent found with this id', 404);
+        if (!ascent) {
+            throw new CustomError('No ascent found with this id', 404);
+        }
+
+        if (ascent.user.toString() !== userId.toString()) {
+            throw new CustomError('You do not have permission to access this ascent', 403);
+        }
+
+        return ascent;
+    } catch (error) {
+        if (error.name === 'CastError') {
+            throw new CustomError('Invalid ascent id', 400);
+        }
+
+        throw error;
     }
-
-    if (ascent.user.toString() !== userId.toString()) {
-        throw new CustomError('You do not have permission to access this ascent', 403);
-    }
-
-
-    return ascent;
 }
 
 exports.updateAscentData = (ascent, newData) => {

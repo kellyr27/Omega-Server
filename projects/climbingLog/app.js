@@ -5,6 +5,7 @@ const basePath = '/climbinglog';
 const setUpClimbingLogApp = (app) => {
 
     const authenticate = require('./middleware/authenticate');
+    const errorHandler = require('./middleware/errorHandler');
 
     // Routes
     const userRoutes = require('./routes/userRoutes');
@@ -22,6 +23,9 @@ const setUpClimbingLogApp = (app) => {
     app.get(`${basePath}/protected`, authenticate, (req, res) => {
         res.status(200).json({ message: 'You are authenticated' });
     });
+
+    // Middleware
+    app.use(errorHandler)
 }
 
 module.exports = setUpClimbingLogApp;
