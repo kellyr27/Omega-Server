@@ -10,6 +10,7 @@ exports.getAllRoutes = [
         try {
             const routes = await Route.find({ user: req.user._id }).populate('ascents');
 
+			// TODO: Move this sorting logic to the frontend
             routes.forEach(route => {
                 route.ascents.sort((a, b) => {
                     return new Date(b.date) - new Date(a.date);

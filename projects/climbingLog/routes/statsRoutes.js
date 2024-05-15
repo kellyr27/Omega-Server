@@ -13,5 +13,8 @@ router.route('/performance-rating')
 router.route('/weekly-stats')
     .get(authenticate, ...statsController.getWeeklyStats);
 
+router.route('/steepness-stats')
+	.get(authenticate, ...statsController.getSteepnessStats);
+
 module.exports = router;
 

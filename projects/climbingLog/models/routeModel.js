@@ -19,6 +19,11 @@ const routeSchema = new mongoose.Schema({
         ref: 'User', 
         required: true 
     },
+	steepness: {
+        type: [String],
+        enum: ['slab', 'vertical', 'overhung', 'roof'],
+        default: []
+    },
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },

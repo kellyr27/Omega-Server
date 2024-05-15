@@ -177,3 +177,96 @@ exports.getWeeklyStats = [
         }
     }
 ]
+
+exports.getSteepnessStats = [
+	async (req, res, next) => {
+		try {
+			/**
+			 * Slab Ascents
+			 */
+			const slabStats = {
+				'flash': null,
+				'redpoint': null,
+			}
+
+			const slabRoutes = await Route
+				.find({ user: req.user._id, steepness: 'slab' })
+				.populate('ascents')
+				.populate({
+					path: 'ascents',
+					populate: {
+					path: 'route'
+					}
+				});
+			/**
+			 * For each Slab route, find the best ascent. 
+			 * The best ascent is the only with the highest tickType, then if there are multiple the one with the earliest date
+			 */
+			const tickTypeValues = {
+				flash: 4,
+				redpoint: 3,
+				hangdog: 2,
+				attempt: 1
+			  };
+			  
+			const slabBestAscents = slabRoutes.map(route => {
+				// Assuming route.ascents is an array of ascents for the route
+				if (!route.ascents || route.ascents.length === 0) {
+					return null;
+				}
+				
+				// Sort ascents by tickType and date
+				const sortedAscents = route.ascents.sort((a, b) => {
+					if (tickTypeValues[a.tickType] !== tickTypeValues[b.tickType]) {
+						return tickTypeValues[b.tickType] - tickTypeValues[a.tickType];
+					} else {
+						return new Date(a.date) - new Date(b.date);
+					}
+				});
+
+				const bestAscent = sortedAscents[0];
+
+				// Return the best ascent
+				return bestAscent;
+			})
+
+
+
+
+			for (const tickType of Object.keys(slabStats)) {
+				// Filter ascents with the current tickType
+				const filteredAscents = slabBestAscents.filter(ascent => ascent.tickType === tickType);
+
+				// If no ascents with that tickType, go to next iteration
+				if (filteredAscents.length === 0) {
+					continue;
+				}
+
+				// Find the max grade for the current tickType
+				const maxGrade = filteredAscents.reduce((max, ascent) => {
+					return ascent.route.grade > max ? ascent.route.grade : max;
+				}, 0);
+
+				// Filter ascents with the max grade
+				const maxGradeAscents = filteredAscents.filter(ascent => ascent.route.grade === maxGrade);
+
+
+				// Order the ascents by date descending
+				maxGradeAscents.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+				// Take the top three ascents
+				const topThreeAscents = maxGradeAscents.slice(0, 3);
+
+				slabStats[tickType] = topThreeAscents
+
+			}
+
+			console.log(slabStats);
+
+			res.status(200).json({ message: 'Steepness stats' });
+
+		} catch (error) {
+			next(error)
+		}
+	}
+]
