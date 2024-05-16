@@ -1,13 +1,15 @@
 const Ascent = require('../models/ascentModel');
 const Route = require('../models/routeModel');
 const CustomError = require('../utils/CustomError');
+const {findOrCreateArea} = require('./areaServices');
 
 exports.findOrCreateRoute = async (routeData, userId) => {
 
     let route = await Route.findOne({ name: routeData.name, user: userId});
 
     if (!route) {
-        route = new Route({...routeData, user: userId });
+		const area = await findOrCreateArea(routeData.area, userId);
+        route = new Route({...routeData, area, user: userId });
         await route.save();
     }
     return route;
@@ -24,10 +26,14 @@ exports.findRoute = async (routeId, userId) => {
     return route;
 }
 
-exports.updateRouteData = (route, newData) => {
+exports.updateRouteData = async (route, newData) => {
     route.name = newData.name;
     route.colour = newData.colour;
     route.grade = newData.grade;
     route.user = newData.user;
+	
+	let area = await findOrCreateArea(newData.area, newData.user);
+	route.area = area;
+
     return route;
 }

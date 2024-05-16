@@ -30,7 +30,7 @@ const routeSchema = new mongoose.Schema({
     timestamps: true
 });
 
-routeSchema.index({ name: 1, user: 1, area: 1 }, { unique: true });
+routeSchema.index({ name: 1, user: 1 }, { unique: true });
 
 routeSchema.virtual('ascents', {
     ref: 'Ascent',

@@ -49,7 +49,7 @@ exports.updateRoute = [
                 user: req.user._id
             };
 
-            const updatedRoute = updateRouteData(route, newData);
+            const updatedRoute = await updateRouteData(route, newData);
             await updatedRoute.save();
 
             res.status(200).json(updatedRoute);
