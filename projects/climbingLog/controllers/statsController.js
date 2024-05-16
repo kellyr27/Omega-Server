@@ -1,5 +1,6 @@
 const Ascent = require('../models/ascentModel');
 const Route = require('../models/routeModel');
+const Area = require('../models/areaModel');
 const {findAscent} = require('../services/ascentServices');
 
 exports.getGradePyramid = [
@@ -275,9 +276,93 @@ exports.getWeeklyStats = [
 exports.getAreaStats = [
 	async (req, res, next) => {
 		try {
-			
+			const tickTypeValues = {
+				flash: 4,
+				redpoint: 3,
+				hangdog: 2,
+				attempt: 1
+			};
 
-			const areaStats = {}
+			// Iterate through all the areas
+			const areas = await Area.find({ user: req.user._id });
+
+			// For each area, get the number of routes
+			const areaStats = await Promise.all(areas.map(async (area) => {
+
+				// Get all routes in that area
+				const routes = await Route.find({ user: req.user._id, area: area._id })
+					.populate('ascents')
+					.populate({
+						path: 'ascents',
+						populate: {
+							path: 'route'
+						}
+					})
+
+				
+				// Order all ascents by tickType and date
+				routes.forEach(route => {
+
+					route.ascents.sort((a, b) => {
+						if (tickTypeValues[a.tickType] !== tickTypeValues[b.tickType]) {
+							return tickTypeValues[b.tickType] - tickTypeValues[a.tickType];
+						} else {
+							return new Date(a.date) - new Date(b.date);
+						}
+					});
+				});
+
+				
+				// For each route, find the best ascent(s)
+				const bestAscents = routes.map(route => {
+					// Assuming route.ascents is an array of ascents for the route
+					if (!route.ascents || route.ascents.length === 0) {
+						return null;
+					}
+
+					const bestAscent = route.ascents[0];
+
+					// Return the best ascent
+					return bestAscent;
+				})
+
+				// Find the max Grade for each tickType
+				const maxGrades = {}
+				for (const tickType of Object.keys(tickTypeValues)) {
+					const filteredAscents = bestAscents.filter(ascent => ascent.tickType === tickType);
+
+					if (filteredAscents.length === 0) {
+						continue;
+					}
+
+					const maxGrade = filteredAscents.reduce((max, ascent) => {
+						return ascent.route.grade > max ? ascent.route.grade : max;
+					}, 0);
+
+					maxGrades[tickType] = maxGrade;
+				}
+
+				// Find the latest 3 climbs for each tickType at the max grade
+				const topThreeAscents = {}
+				for (const tickType of Object.keys(tickTypeValues)) {
+					const filteredAscents = bestAscents.filter(ascent => ascent.tickType === tickType && ascent.route.grade === maxGrades[tickType]);
+
+					if (filteredAscents.length === 0) {
+						continue;
+					}
+
+					filteredAscents.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+					topThreeAscents[tickType] = filteredAscents.slice(0, 3);
+				}
+				
+
+				return {
+					area: area.name,
+					topAscents: topThreeAscents
+				}
+			}))
+
 			res.status(200).json(areaStats);
 
 		} catch (error) {

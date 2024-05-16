@@ -7,8 +7,8 @@ const {deleteAreaIfEmpty} = require('./areaServices');
 exports.findOrCreateRoute = async (routeData, userId) => {
 
     let route = await Route.findOne({ name: routeData.name, user: userId});
-	console.log('route is', route)
-    if (!route) {
+
+	if (!route) {
 		if (routeData.area) {
 			const area = await findOrCreateArea(routeData.area, userId);
         	route = new Route({...routeData, area, user: userId });

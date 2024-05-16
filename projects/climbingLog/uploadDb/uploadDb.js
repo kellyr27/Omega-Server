@@ -91,7 +91,7 @@ const getAscentsObjects = async () => {
 
         return {
             date: excelDateToJSDate(item.Date),
-            tickType: tickTypeExcelToJS(item.TickType),
+            tickType: tickTypeExcelToJS(item['Tick Type']),
             notes: item.Notes,
             route
         };
