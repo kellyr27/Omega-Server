@@ -8,33 +8,7 @@ describe('Ascent Routes', () => {
         await testDb.dropDatabase()
     });
 
-    test('Should create a new ascent with a new route with multiple steepnesses', async () => {
-
-        const [testUser, token] = await testHelpers.createTestUser();
-
-        // Create a new ascent
-        const ascent = {
-            route: {
-                name: 'Test Route',
-                grade: 17,
-                colour: 'red',
-				steepness: ['vertical', 'slab']
-            },
-            date: '2021-01-01',
-            tickType: 'flash',
-            notes: 'Test notes',
-        }
-
-        // Send a POST request to the server from the user
-        const response = await request(server)
-            .post('/climbinglog/api/ascents')
-            .set('Authorization', `Bearer ${token}`)
-            .send(ascent)
-            .expect(201);
-
-    });
-
-	test('Should create a new ascent with a new route with a single steepness', async () => {
+	test('Should create a new ascent with a new route', async () => {
 		const [testUser, token] = await testHelpers.createTestUser();
 
         // Create a new ascent
@@ -43,7 +17,6 @@ describe('Ascent Routes', () => {
                 name: 'Test Route',
                 grade: 17,
                 colour: 'red',
-				steepness: ['overhung']
             },
             date: '2021-01-01',
             tickType: 'flash',

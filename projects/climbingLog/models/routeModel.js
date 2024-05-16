@@ -19,18 +19,18 @@ const routeSchema = new mongoose.Schema({
         ref: 'User', 
         required: true 
     },
-	steepness: {
-        type: [String],
-        enum: ['slab', 'vertical', 'overhung', 'roof'],
-        default: []
-    },
+	area: { 
+		type: mongoose.Schema.Types.ObjectId, 
+		ref: 'Area', 
+		required: true 
+	}
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
     timestamps: true
 });
 
-routeSchema.index({ name: 1, user: 1 }, { unique: true });
+routeSchema.index({ name: 1, user: 1, area: 1 }, { unique: true });
 
 routeSchema.virtual('ascents', {
     ref: 'Ascent',
