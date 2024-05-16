@@ -22,9 +22,9 @@ exports.createAscent = [
 				notes: req.body.notes
 			});
 
-            const populatedAscent = await populateAscent(ascent)
-
+            const populatedAscent = await populateAscent(ascent);
             res.status(201).json(populatedAscent);
+			
         } catch (error) {
             next(error)
         }

@@ -11,6 +11,7 @@ beforeAll(async () => {
         global.User = require('../models/userModel');
         global.Ascent = require('../models/ascentModel');
         global.Route = require('../models/routeModel');
+		global.Area = require('../models/areaModel');
         // Load all my Utils and save them as global variables for testing
         global.testHelpers = require('./utils/testHelpers');
     } catch (error) {

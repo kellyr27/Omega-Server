@@ -36,14 +36,15 @@ exports.updateRouteData = (route, newData) => {
 }
 
 exports.populateRoute = async (route) => {
-	return route
-		.populate(['ascents', 'area'])
-		.execPopulate();
+	const populatedRoute = await route.populate(['ascents', 'area'])
+	return populatedRoute;
 }
 
 exports.populateRoutes = async (routes) => {
-	return Promise.all(routes.map(route => populateRoute(route)));
+	const populatedRoutes = await routes.populate(['ascents', 'area'])
+	return populatedRoutes;
 }
+
 
 exports.deleteRouteIfEmpty = async (userId, routeId) => {
 	// Find the route
