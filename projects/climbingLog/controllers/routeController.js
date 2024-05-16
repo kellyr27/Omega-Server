@@ -10,13 +10,6 @@ exports.getAllRoutes = [
         try {
             const routes = await Route.find({ user: req.user._id }).populate('ascents');
 
-			// TODO: Move this sorting logic to the frontend
-            routes.forEach(route => {
-                route.ascents.sort((a, b) => {
-                    return new Date(b.date) - new Date(a.date);
-                });
-            });
-
             res.status(200).json(routes);
         } catch (error) {
             next(error)
@@ -40,13 +33,15 @@ exports.updateRoute = [
     async (req, res, next) => {
         try {
             const route = await findRoute(req.params.id, req.user._id);
+			const area = await findOrCreateArea(req.body.area, req.user._id);
 
             // Update the route
             const newData = {
                 name: req.body.name,
                 grade: req.body.grade,
                 colour: req.body.colour,
-                user: req.user._id
+                user: req.user._id,
+				area: area._id
             };
 
             const updatedRoute = await updateRouteData(route, newData);

@@ -2,8 +2,8 @@ const Ascent = require('../models/ascentModel');
 const Route = require('../models/routeModel');
 const ascentSchema = require('../validators/ascentValidator')
 const validateSchema = require('../middleware/validateSchema')
-const { findAscent, updateAscentData, uploadAscents } = require('../services/ascentServices')
-const { findOrCreateRoute } = require('../services/routeServices')
+const { findAscent, updateAscentData, uploadAscents, populateAscent, populateAscents } = require('../services/ascentServices')
+const { findOrCreateRoute, onlyOneAscentRecordedOnRoute } = require('../services/routeServices')
 
 
 exports.createAscent = [
@@ -14,17 +14,16 @@ exports.createAscent = [
             // Check if the route already exists in the database
             let route = await findOrCreateRoute(req.body.route, req.user._id);
 
-            const ascent = new Ascent({
-                user: req.user._id,
-                route: route._id,
-                date: req.body.date,
-                tickType: req.body.tickType,
-                notes: req.body.notes
-            });
+            const ascent = await Ascent.create({
+				user: req.user._id,
+				route: route._id,
+				date: req.body.date,
+				tickType: req.body.tickType,
+				notes: req.body.notes
+			});
 
-            await ascent.save();
+            const populatedAscent = await populateAscent(ascent)
 
-            const populatedAscent = await Ascent.findById(ascent._id).populate('route');
             res.status(201).json(populatedAscent);
         } catch (error) {
             next(error)
@@ -35,20 +34,24 @@ exports.createAscent = [
 exports.getAllAscents = [
     async (req, res, next) => {
         try {
-            const ascents = await Ascent.find({ user: req.user._id }).populate('route');
-            res.status(200).json(ascents);
+            const ascents = await Ascent.find({ user: req.user._id })
+			const populatedAscents = await populateAscents(ascents)
+
+            res.status(200).json(populatedAscents);
         } catch (error) {
             next(error)
         }
     }
 ]
 
+// TODO - Make this better
 exports.getAscentById = [
     async (req, res, next) => {
         try {
             const ascent = await findAscent(req.params.id, req.user._id);
-            const ascentObject = ascent.toObject();
-            ascentObject.isOnlyAscent = await Ascent.countDocuments({ route: ascent.route._id }) === 1;
+			const populatedAscent = await populateAscent(ascent)
+            const ascentObject = populatedAscent.toObject();
+            ascentObject.isOnlyAscent = onlyOneAscentRecordedOnRoute(ascent.route._id);
 
             res.status(200).json(ascentObject);
         } catch (error) {
@@ -64,12 +67,15 @@ exports.updateAscent = [
 
             const ascent = await findAscent(req.params.id, req.user._id);
 
-            // Check if the route already exists in the database
-            const route = await findOrCreateRoute(req.body.route, req.user._id)
+			// Get the id of the existing route
+			const existingRouteId = ascent.route;
+
+            // Check if the new route already exists in the database
+            const updatedRoute = await findOrCreateRoute(req.body.route, req.user._id)
 
             const newData = {
                 user: req.user._id,
-                route: route._id,
+                route: updatedRoute._id,
                 date: req.body.date,
                 tickType: req.body.tickType,
                 notes: req.body.notes
@@ -77,8 +83,11 @@ exports.updateAscent = [
             const updatedAscent = updateAscentData(ascent, newData);
             await updatedAscent.save();
 
+			// Check if the existing route (prior to update) had any other ascents
+			await deleteRouteAndAreaIfEmpty(req.user._id, existingRouteId);
+
             // Populate the route field before sending the response
-            const populatedAscent = await Ascent.findById(updatedAscent._id).populate('route');
+			const populatedAscent = await populateAscent(updatedAscent)
 
             res.status(200).json(populatedAscent);
         } catch (error) {
@@ -97,13 +106,7 @@ exports.deleteAscent = [
 
             // Delete the ascent
             await ascent.deleteOne();
-
-            // Check if there are any other ascents with the same route
-            const otherAscents = await Ascent.find({ route: routeId });
-            if (otherAscents.length === 0) {
-                // If not, delete the route
-                await Route.findByIdAndDelete(routeId);
-            }
+            await deleteRouteAndAreaIfEmpty(req.user._id, routeId);
 
             res.status(200).json({ message: 'Ascent deleted successfully' });
         } catch (error) {
@@ -137,6 +140,7 @@ exports.prefillAscentDate = [
     }
 ]
 
+// TODO Update to include area
 exports.uploadAscents = [
     async (req, res) => {
         // Remove all Ascents and Routes from the logged in user

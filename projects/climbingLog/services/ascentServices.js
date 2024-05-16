@@ -6,7 +6,7 @@ const getAscentsObjects = require('../uploadDb/uploadDb');
 
 exports.findAscent = async (ascentId, userId) => {
     try {
-        const ascent = await Ascent.findById(ascentId).populate('route');
+        const ascent = await Ascent.findById(ascentId);
 
         if (!ascent) {
             throw new CustomError('No ascent found with this id', 404);
@@ -33,6 +33,21 @@ exports.updateAscentData = (ascent, newData) => {
     ascent.tickType = newData.tickType;
     ascent.notes = newData.notes;
     return ascent;
+}
+
+exports.populateAscent = async (ascent) => {
+	return ascent
+		.populate({
+			path: 'route',
+			populate: {
+				path: 'area'
+			}
+		})
+		.execPopulate();
+}
+
+exports.populateAscents = async (ascents) => {
+	return Promise.all(ascents.map(ascent => populateAscent(ascent)));
 }
 
 exports.uploadAscents = async (userId) => {

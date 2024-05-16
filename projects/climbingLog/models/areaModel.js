@@ -17,6 +17,8 @@ const areaSchema = new mongoose.Schema({
 	timestamps: true
 });
 
+areaSchema.index({ name: 1, user: 1 }, { unique: true });
+
 const Area = getDatabaseConnection().model('Area', areaSchema);
 
 module.exports = Area;
