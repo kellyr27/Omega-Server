@@ -3,7 +3,7 @@ const Route = require('../models/routeModel');
 const CustomError = require('../utils/CustomError');
 
 exports.findOrCreateArea = async (areaData, userId) => {
-
+	
     let area = await Area.findOne({ name: areaData.name, user: userId});
 
     if (!area) {

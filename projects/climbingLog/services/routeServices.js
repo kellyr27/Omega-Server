@@ -2,14 +2,20 @@ const Ascent = require('../models/ascentModel');
 const Route = require('../models/routeModel');
 const CustomError = require('../utils/CustomError');
 const {findOrCreateArea} = require('./areaServices');
+const {deleteAreaIfEmpty} = require('./areaServices');
 
 exports.findOrCreateRoute = async (routeData, userId) => {
 
     let route = await Route.findOne({ name: routeData.name, user: userId});
-
+	console.log('route is', route)
     if (!route) {
-		const area = await findOrCreateArea(routeData.area, userId);
-        route = new Route({...routeData, area, user: userId });
+		if (routeData.area) {
+			const area = await findOrCreateArea(routeData.area, userId);
+        	route = new Route({...routeData, area, user: userId });
+		} else {
+			route = new Route({...routeData, user: userId });
+		}
+
         await route.save();
     }
     return route;
@@ -31,7 +37,9 @@ exports.updateRouteData = (route, newData) => {
     route.colour = newData.colour;
     route.grade = newData.grade;
     route.user = newData.user;
-	route.area = newData.area;
+	if (newData.area) {
+		route.area = newData.area;
+	}
     return route;
 }
 
@@ -41,25 +49,27 @@ exports.populateRoute = async (route) => {
 }
 
 exports.populateRoutes = async (routes) => {
-	const populatedRoutes = await routes.populate(['ascents', 'area'])
-	return populatedRoutes;
+	return await Route.populate(routes, ['ascents', 'area']);
 }
-
 
 exports.deleteRouteIfEmpty = async (userId, routeId) => {
 	// Find the route
 	const route = await Route.findById(routeId);
-	const populatedRoute = await populateRoute(route);
+	const populatedRoute = await exports.populateRoute(route);
 
 	// Check if there are any ascents with the same route
 	if (populatedRoute.ascents.length === 0) {
-		const areaId = route.area;
+		if (route.area) {
+			const areaId = route.area;
 
-		// delete the route
-		await Route.findByIdAndDelete(routeId);
+			// delete the route
+			await Route.findByIdAndDelete(routeId);
 
-		// Check if the route area has any routes amd delete
-		await deleteAreaIfEmpty(userId, areaId);
+			// Check if the route area has any routes amd delete
+			await deleteAreaIfEmpty(userId, areaId);
+		} else {
+			await Route.findByIdAndDelete(routeId);
+		}
 	}
 }
 
@@ -67,7 +77,7 @@ exports.deleteRouteIfEmpty = async (userId, routeId) => {
 // Function to check if the ascent is the only one for its route
 exports.onlyOneAscentRecordedOnRoute = async (routeId) => {
 	const route = await Route.findById(routeId);
-	const populatedRoute = await populateRoute(route);
+	const populatedRoute = await exports.populateRoute(route);
 	
 	const count = populatedRoute.ascents.length;
 	return count === 1;

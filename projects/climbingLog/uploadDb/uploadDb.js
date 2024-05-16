@@ -40,9 +40,24 @@ const excelDateToJSDate = (serial) => {
     return new Date(Date.UTC(date_info.getFullYear(), date_info.getMonth(), date_info.getDate(), hours, minutes, seconds));
 };
 
+const tickTypeExcelToJS = (tickType) => {
+	switch (tickType) {
+		case 'Flash':
+			return 'flash';
+		case 'Red point':
+			return 'redpoint';
+		case 'Hang dog':
+			return 'hangdog';
+		case 'Attempt':
+			return 'attempt';
+		default:
+			return '';
+	}
+}
+
 // Load the Excel file
 const getAscentsObjects = async () => {
-    const workbook = XLSX.readFile(path.resolve(__dirname, 'Climbing Log - Copy.xlsx'));
+    const workbook = XLSX.readFile(path.resolve(__dirname, 'Climbing Log.xlsx'));
 
     // Get the first sheet
     const ascentsSheet = workbook.SheetNames[0];
@@ -60,13 +75,14 @@ const getAscentsObjects = async () => {
             id: item.Id,
             name: item.Name,
             grade: item.Grade,
-            colour: item.Colour.toLowerCase()
+            colour: item.Colour.toLowerCase(),
+			...(item.Area ? { area: {name: item.Area} } : {})
         }
     }).filter(route => route.name !== undefined);
 
     const ascentsObjectsList = ascentsJsonData.map(item => {
         // Save the route name and grade
-        const route = routesObjectsList.find(route => route.id === item.RouteId);
+        const route = routesObjectsList.find(route => route.id === item['Route Id']);
         item.date = excelDateToJSDate(item.Date);
         
         if (item.Notes === undefined) {
@@ -75,7 +91,7 @@ const getAscentsObjects = async () => {
 
         return {
             date: excelDateToJSDate(item.Date),
-            tickType: item.TickType.toLowerCase(),
+            tickType: tickTypeExcelToJS(item.TickType),
             notes: item.Notes,
             route
         };

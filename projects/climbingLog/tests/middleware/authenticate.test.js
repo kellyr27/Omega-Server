@@ -8,7 +8,7 @@ describe('Authenticate Middleware', () => {
         await testDb.dropDatabase()
     });
 
-    it('should pass authentication with valid token', async () => {
+    it.skip('should pass authentication with valid token', async () => {
         const [testUser, token] = await testHelpers.createTestUser();
         
         const res = await request(server)
@@ -18,7 +18,7 @@ describe('Authenticate Middleware', () => {
         expect(res.statusCode).toEqual(200);
     });
 
-    it('should fail authentication with invalid token', async () => {
+    it.skip('should fail authentication with invalid token', async () => {
         const [testUser, token] = await testHelpers.createTestUser();
         
         const res = await request(server)

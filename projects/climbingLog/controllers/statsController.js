@@ -271,3 +271,17 @@ exports.getWeeklyStats = [
 // 		}
 // 	}
 // ]
+
+exports.getAreaStats = [
+	async (req, res, next) => {
+		try {
+			
+
+			const areaStats = {}
+			res.status(200).json(areaStats);
+
+		} catch (error) {
+			next(error)
+		}
+	}
+]

@@ -16,10 +16,11 @@ const createTestUser = async () => {
     return [testUser, token];
 }
 
-const createTestArea = async () => {
+const createTestArea = async (user) => {
 	// Create a test area with a random name to avoid conflicts
 	const area = new Area({
 		name: `Test Area ${Math.floor(Math.random() * 100000)}`,
+		user: user._id,
 	});
 	await area.save();
 
@@ -43,9 +44,12 @@ const createTestRouteWithExistingArea = async (user, area) => {
 
 const createTestRouteWithoutExistingArea = async (user) => {
 	
+	// Create a test area with a random name to avoid conflicts
 	const area = new Area({
 		name: `Test Area ${Math.floor(Math.random() * 100000)}`,
+		user: user._id,
 	});
+	await area.save();
 
 	// Create a test route with a random name to avoid conflicts
 	const route = new Route({
@@ -57,7 +61,8 @@ const createTestRouteWithoutExistingArea = async (user) => {
 	});
 	await route.save();
 
-	return route;
+	const populatedRoute = await Route.findById(route._id).populate('area');
+	return populatedRoute;
 }
 
 const createTestAscentWithExistingRoute = async (user, route) => {
@@ -93,29 +98,22 @@ const createTestAscentWithoutExistingRoute = async (user) => {
 
 const createTestUserWithAscents = async () => {
     const [user, token] = await createTestUser();
-
 	// Create two test areas
-	const area1 = await createTestArea();
-	const area2 = await createTestArea();
-
-    // Generate a random number of routes between 1 and 5
-    const numRoutes = Math.floor(Math.random() * 5) + 1;
-    const routes = await Promise.all(Array(numRoutes).fill().map(async () => {
-		// Choose ranmly either test area1 or test area2
-		if (Math.random() < 0.5) {
-			return createTestRouteWithExistingArea(user, area1)
-		} else {
-			return createTestRouteWithExistingArea(user, area2)
-		}
-	}))
-
-    const ascents = [];
-    for (const route of routes) {
-        const numAscents = Math.floor(Math.random() * 5) + 1;
-        const routeAscents = await Promise.all(Array(numAscents).fill().map(async () => createTestAscentWithExistingRoute(user, route)));
-        ascents.push(...routeAscents);
-    }
-
+	const area1 = await createTestArea(user);
+	const area2 = await createTestArea(user);
+    // Generate a test routes
+	const route1 = await createTestRouteWithExistingArea(user, area1);
+	const route2 = await createTestRouteWithExistingArea(user, area2);
+	const route3 = await createTestRouteWithExistingArea(user, area2);
+	const routes = [route1, route2, route3];
+    // Generate test ascents
+	const ascent1 = await createTestAscentWithExistingRoute(user, route1);
+	const ascent2 = await createTestAscentWithExistingRoute(user, route2);
+	const ascent3 = await createTestAscentWithExistingRoute(user, route2);
+	const ascent4 = await createTestAscentWithExistingRoute(user, route3);
+	const ascent5 = await createTestAscentWithExistingRoute(user, route3);
+	const ascent6 = await createTestAscentWithExistingRoute(user, route3);
+	const ascents = [ascent1, ascent2, ascent3, ascent4, ascent5, ascent6];
     return [user, token, routes, ascents];
 }
 

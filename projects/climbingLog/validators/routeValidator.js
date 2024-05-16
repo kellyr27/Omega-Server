@@ -8,7 +8,7 @@ const routeSchema = Joi.object({
     name: Joi.string().required(),
     colour: Joi.string().valid(...allowedColors).required(),
     grade: Joi.number().integer().min(10).max(40).required(),
-	area: areaValidator.required()
+	area: areaValidator.optional()
 }).unknown(true)
 
 module.exports = routeSchema;

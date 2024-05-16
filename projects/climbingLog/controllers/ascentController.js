@@ -1,9 +1,10 @@
 const Ascent = require('../models/ascentModel');
 const Route = require('../models/routeModel');
+const Area = require('../models/areaModel');
 const ascentSchema = require('../validators/ascentValidator')
 const validateSchema = require('../middleware/validateSchema')
 const { findAscent, updateAscentData, uploadAscents, populateAscent, populateAscents } = require('../services/ascentServices')
-const { findOrCreateRoute, onlyOneAscentRecordedOnRoute } = require('../services/routeServices')
+const { findOrCreateRoute, onlyOneAscentRecordedOnRoute, deleteRouteIfEmpty } = require('../services/routeServices')
 
 
 exports.createAscent = [
@@ -146,6 +147,7 @@ exports.uploadAscents = [
         // Remove all Ascents and Routes from the logged in user
         await Ascent.deleteMany({ user: req.user._id });
         await Route.deleteMany({ user: req.user._id });
+		await Area.deleteMany({ user: req.user._id });
         await uploadAscents(req.user._id);
 
         res.status(200).json({ message: 'Uploaded ascents' });

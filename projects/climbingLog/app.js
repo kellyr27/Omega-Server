@@ -18,7 +18,7 @@ const setUpClimbingLogApp = (app) => {
     app.use(`${basePath}/api/ascents`, ascentRoutes);
     app.use(`${basePath}/api/routes`, routeRoutes);
     app.use(`${basePath}/api/stats`, statsRoutes);
-	// app.use(`${basePath}/api/areas`, areaRoutes);
+	app.use(`${basePath}/api/areas`, areaRoutes);
 
 
     // Used for testing the authenticate middleware

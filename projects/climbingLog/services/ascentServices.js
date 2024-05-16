@@ -36,6 +36,7 @@ exports.updateAscentData = (ascent, newData) => {
 }
 
 exports.populateAscent = async (ascent) => {
+
 	const populatedAscent = await ascent.populate({
 			path: 'route',
 			populate: {
@@ -46,13 +47,12 @@ exports.populateAscent = async (ascent) => {
 }
 
 exports.populateAscents = async (ascents) => {
-	const populatedAscents = await ascents.populate({
+	return await Ascent.populate(ascents, {
 		path: 'route',
 		populate: {
-			path: 'area'
+		  path: 'area'
 		}
-	})
-	return populatedAscents;
+	});
 }
 
 exports.uploadAscents = async (userId) => {
