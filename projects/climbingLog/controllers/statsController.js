@@ -355,13 +355,33 @@ exports.getAreaStats = [
 
 					topThreeAscents[tickType] = filteredAscents.slice(0, 3);
 				}
-				
+
+				/** Now to get a count of all ascents by grade within the area */
+				const allAscents = await Ascent.find({ user: req.user._id })
+					.populate({
+						path: 'route',
+						populate: {
+						path: 'area'
+						}
+					});
+
+				const gradeCounts = allAscents.reduce((obj, ascent) => {
+					if (!obj[ascent.route.grade]) {
+						obj[ascent.route.grade] = 1;
+					} else {
+						obj[ascent.route.grade]++;
+					}
+					return obj;
+				}, {});
 
 				return {
 					area: area.name,
-					topAscents: topThreeAscents
+					topAscents: topThreeAscents,
+					gradeCounts: gradeCounts
 				}
 			}))
+
+			// 
 
 			res.status(200).json(areaStats);
 
