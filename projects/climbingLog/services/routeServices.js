@@ -26,7 +26,7 @@ exports.findRoute = async (routeId, userId) => {
     return route;
 }
 
-exports.updateRouteData = async (route, newData) => {
+exports.updateRouteData = (route, newData) => {
     route.name = newData.name;
     route.colour = newData.colour;
     route.grade = newData.grade;
@@ -45,7 +45,7 @@ exports.populateRoutes = async (routes) => {
 	return Promise.all(routes.map(route => populateRoute(route)));
 }
 
-exports.deleteRouteAndAreaIfEmpty = async (userId, routeId) => {
+exports.deleteRouteIfEmpty = async (userId, routeId) => {
 	// Find the route
 	const route = await Route.findById(routeId);
 	const populatedRoute = await populateRoute(route);
@@ -57,13 +57,8 @@ exports.deleteRouteAndAreaIfEmpty = async (userId, routeId) => {
 		// delete the route
 		await Route.findByIdAndDelete(routeId);
 
-		// Check if the route area has any other routes
-		const routesWithArea = await Route.find({ area: areaId, user: userId});
-	
-		// If not, delete the area
-		if (routesWithArea.length === 0) {
-			await Area.findByIdAndDelete(areaId);
-		}
+		// Check if the route area has any routes amd delete
+		await deleteAreaIfEmpty(userId, areaId);
 	}
 }
 

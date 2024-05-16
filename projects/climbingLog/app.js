@@ -12,11 +12,13 @@ const setUpClimbingLogApp = (app) => {
     const ascentRoutes = require('./routes/ascentRoutes');
     const routeRoutes = require('./routes/routeRoutes');
     const statsRoutes = require('./routes/statsRoutes');
+	const areaRoutes = require('./routes/areaRoutes');
 
     app.use(`${basePath}/api/users`, userRoutes);
     app.use(`${basePath}/api/ascents`, ascentRoutes);
     app.use(`${basePath}/api/routes`, routeRoutes);
     app.use(`${basePath}/api/stats`, statsRoutes);
+	// app.use(`${basePath}/api/areas`, areaRoutes);
 
 
     // Used for testing the authenticate middleware

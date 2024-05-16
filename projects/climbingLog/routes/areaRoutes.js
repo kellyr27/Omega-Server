@@ -5,3 +5,6 @@ const authenticate = require('../middleware/authenticate');
 
 router.route('/')
     .get(authenticate, ...areaController.getAllAreas);
+
+
+module.exports = router;

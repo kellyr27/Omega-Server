@@ -84,7 +84,7 @@ exports.updateAscent = [
             await updatedAscent.save();
 
 			// Check if the existing route (prior to update) had any other ascents
-			await deleteRouteAndAreaIfEmpty(req.user._id, existingRouteId);
+			await deleteRouteIfEmpty(req.user._id, existingRouteId);
 
             // Populate the route field before sending the response
 			const populatedAscent = await populateAscent(updatedAscent)
@@ -106,7 +106,7 @@ exports.deleteAscent = [
 
             // Delete the ascent
             await ascent.deleteOne();
-            await deleteRouteAndAreaIfEmpty(req.user._id, routeId);
+            await deleteRouteIfEmpty(req.user._id, routeId);
 
             res.status(200).json({ message: 'Ascent deleted successfully' });
         } catch (error) {

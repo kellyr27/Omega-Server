@@ -21,7 +21,6 @@ const setupApp = require('./app');
  */
 const startServer = async () => {
     try {
-
         // Set up the app
         const app = setupApp();
 
