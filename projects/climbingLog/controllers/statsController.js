@@ -179,109 +179,18 @@ exports.getWeeklyStats = [
     }
 ]
 
-// DEFUNCT
-// exports.getSteepnessStats = [
-// 	async (req, res, next) => {
-// 		try {
-// 			/**
-// 			 * Slab Ascents
-// 			 */
-// 			const slabStats = {
-// 				'flash': null,
-// 				'redpoint': null,
-// 			}
 
-// 			const slabRoutes = await Route
-// 				.find({ user: req.user._id, steepness: 'slab' })
-// 				.populate('ascents')
-// 				.populate({
-// 					path: 'ascents',
-// 					populate: {
-// 					path: 'route'
-// 					}
-// 				});
-// 			/**
-// 			 * For each Slab route, find the best ascent. 
-// 			 * The best ascent is the only with the highest tickType, then if there are multiple the one with the earliest date
-// 			 */
-// 			const tickTypeValues = {
-// 				flash: 4,
-// 				redpoint: 3,
-// 				hangdog: 2,
-// 				attempt: 1
-// 			  };
-			  
-// 			const slabBestAscents = slabRoutes.map(route => {
-// 				// Assuming route.ascents is an array of ascents for the route
-// 				if (!route.ascents || route.ascents.length === 0) {
-// 					return null;
-// 				}
-				
-// 				// Sort ascents by tickType and date
-// 				const sortedAscents = route.ascents.sort((a, b) => {
-// 					if (tickTypeValues[a.tickType] !== tickTypeValues[b.tickType]) {
-// 						return tickTypeValues[b.tickType] - tickTypeValues[a.tickType];
-// 					} else {
-// 						return new Date(a.date) - new Date(b.date);
-// 					}
-// 				});
-
-// 				const bestAscent = sortedAscents[0];
-
-// 				// Return the best ascent
-// 				return bestAscent;
-// 			})
-
-
-
-
-// 			for (const tickType of Object.keys(slabStats)) {
-// 				// Filter ascents with the current tickType
-// 				const filteredAscents = slabBestAscents.filter(ascent => ascent.tickType === tickType);
-
-// 				// If no ascents with that tickType, go to next iteration
-// 				if (filteredAscents.length === 0) {
-// 					continue;
-// 				}
-
-// 				// Find the max grade for the current tickType
-// 				const maxGrade = filteredAscents.reduce((max, ascent) => {
-// 					return ascent.route.grade > max ? ascent.route.grade : max;
-// 				}, 0);
-
-// 				// Filter ascents with the max grade
-// 				const maxGradeAscents = filteredAscents.filter(ascent => ascent.route.grade === maxGrade);
-
-
-// 				// Order the ascents by date descending
-// 				maxGradeAscents.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-// 				// Take the top three ascents
-// 				const topThreeAscents = maxGradeAscents.slice(0, 3);
-
-// 				slabStats[tickType] = topThreeAscents
-
-// 			}
-
-// 			console.log(slabStats);
-
-// 			res.status(200).json({ message: 'Steepness stats' });
-
-// 		} catch (error) {
-// 			next(error)
-// 		}
-// 	}
-// ]
+// TODO: Move
+const tickTypeValues = {
+	flash: 4,
+	redpoint: 3,
+	hangdog: 2,
+	attempt: 1
+};
 
 exports.getAreaStats = [
 	async (req, res, next) => {
 		try {
-			const tickTypeValues = {
-				flash: 4,
-				redpoint: 3,
-				hangdog: 2,
-				attempt: 1
-			};
 
 			// Iterate through all the areas
 			const areas = await Area.find({ user: req.user._id });
@@ -313,7 +222,7 @@ exports.getAreaStats = [
 				});
 
 				
-				// For each route, find the best ascent(s)
+				// For each route, find the best ascent
 				const bestAscents = routes.map(route => {
 					// Assuming route.ascents is an array of ascents for the route
 					if (!route.ascents || route.ascents.length === 0) {
@@ -356,8 +265,10 @@ exports.getAreaStats = [
 					topThreeAscents[tickType] = filteredAscents.slice(0, 3);
 				}
 
-				/** Now to get a count of all ascents by grade within the area */
-				const allAscents = await Ascent.find({ user: req.user._id })
+				/** 
+				 * Now to get a count of all ascents by grade within the area 
+				 * */
+				const allAscents = await Ascent.find({ user: req.user._id, route: { $in: routes.map(route => route._id) }})
 					.populate({
 						path: 'route',
 						populate: {
@@ -374,14 +285,18 @@ exports.getAreaStats = [
 					return obj;
 				}, {});
 
+				const totalAscents = Object.values(gradeCounts).reduce((acc, curr) => acc + curr, 0);
+
 				return {
 					area: area.name,
 					topAscents: topThreeAscents,
-					gradeCounts: gradeCounts
+					gradeCounts: gradeCounts,
+					totalAscents: totalAscents
 				}
 			}))
 
-			// 
+			// Order the areas by total ascents
+			areaStats.sort((a, b) => b.totalAscents - a.totalAscents);
 
 			res.status(200).json(areaStats);
 
@@ -389,4 +304,118 @@ exports.getAreaStats = [
 			next(error)
 		}
 	}
+]
+
+exports.getTickTypeStats = [
+    async (req, res, next) => {
+        try {
+            
+		// Get all routes in that area
+		const routes = await Route.find({ user: req.user._id })
+			.populate('ascents')
+			.populate({
+				path: 'ascents',
+				populate: {
+					path: 'route'
+				}
+			})
+
+		// Order all ascents by tickType and date
+		routes.forEach(route => {
+			route.ascents.sort((a, b) => {
+				if (tickTypeValues[a.tickType] !== tickTypeValues[b.tickType]) {
+					return tickTypeValues[b.tickType] - tickTypeValues[a.tickType];
+				} else {
+					return new Date(a.date) - new Date(b.date);
+				}
+			});
+		});
+
+		// For each route, find the best ascent
+		const bestAscents = routes.map(route => {
+			// Assuming route.ascents is an array of ascents for the route
+			if (!route.ascents || route.ascents.length === 0) {
+				return null;
+			}
+
+			const bestAscent = route.ascents[0];
+
+			// Return the best ascent
+			return bestAscent;
+		})
+
+		// Find the max Grade for each tickType
+		const maxGrades = {}
+		for (const tickType of Object.keys(tickTypeValues)) {
+			const filteredAscents = bestAscents.filter(ascent => ascent.tickType === tickType);
+
+			if (filteredAscents.length === 0) {
+				continue;
+			}
+
+			const maxGrade = filteredAscents.reduce((max, ascent) => {
+				return ascent.route.grade > max ? ascent.route.grade : max;
+			}, 0);
+
+			maxGrades[tickType] = maxGrade;
+		}
+
+		// Find the all climbs for each tickType at the max grade
+		const topAscents = {}
+		for (const tickType of Object.keys(tickTypeValues)) {
+			const filteredAscents = bestAscents.filter(ascent => ascent.tickType === tickType && ascent.route.grade === maxGrades[tickType]);
+
+			if (filteredAscents.length === 0) {
+				continue;
+			}
+
+			filteredAscents.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+			topAscents[tickType] = filteredAscents;
+		}
+
+		// Now get a count of ascents by tickType for the user
+		const allAscents = await Ascent.find({ user: req.user._id })
+			.populate({
+				path: 'route',
+				populate: {
+				path: 'area'
+				}
+			});	
+
+		const tickTypeCountsTotal = allAscents.reduce((obj, ascent) => {
+			if (!obj[ascent.tickType]) {
+				obj[ascent.tickType] = 1;
+			}
+			else {
+				obj[ascent.tickType]++;
+			}
+			return obj;
+		}, {});
+
+		const tickTypeCountsByGrade = allAscents.reduce((obj, ascent) => {
+			if (!obj[ascent.route.grade]) {
+				obj[ascent.route.grade] = {
+					flash: 0,
+					redpoint: 0,
+					hangdog: 0,
+					attempt: 0
+				}
+			}
+
+			obj[ascent.route.grade][ascent.tickType] += 1;
+
+			return obj;
+		}, {});
+
+		console.log(tickTypeCountsTotal, tickTypeCountsByGrade)
+
+
+
+
+        res.status(200).json({ topAscents, tickTypeCountsTotal, tickTypeCountsByGrade });
+        } catch (error) {
+            next(error)
+        }
+    }
 ]

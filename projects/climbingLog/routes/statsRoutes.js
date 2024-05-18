@@ -16,5 +16,8 @@ router.route('/weekly-stats')
 router.route('/area-stats')
 	.get(authenticate, ...statsController.getAreaStats);
 
+router.route('/tickType-stats')
+	.get(authenticate, ...statsController.getTickTypeStats);
+
 module.exports = router;
 
