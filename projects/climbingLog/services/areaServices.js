@@ -14,6 +14,17 @@ exports.findOrCreateArea = async (areaData, userId) => {
     return area;
 }
 
+exports.findArea = async (areaId, userId) => {
+    const area = await Area.findById(areaId);
+    if (!area) {
+        throw new CustomError('No area found with this id', 404);
+    }
+    if (area.user.toString() !== userId.toString()) {
+        throw new CustomError('You do not have permission to access this area', 403);
+    }
+    return area;
+}
+
 exports.deleteAreaIfEmpty = async (userId, areaId) => {
 
 	// Check if the route area has any routes
@@ -26,3 +37,8 @@ exports.deleteAreaIfEmpty = async (userId, areaId) => {
 
 }
 
+exports.updateAreaData = (area, newData) => {
+    area.name = newData.name;
+	area.steepnessTags = newData.steepnessTags;
+    return area;
+}
