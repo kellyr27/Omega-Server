@@ -39,5 +39,6 @@ exports.deleteAreaIfEmpty = async (userId, areaId) => {
 
 exports.updateAreaData = (area, newData) => {
     area.name = newData.name;
+	area.steepnessTags = newData.steepnessTags;
     return area;
 }

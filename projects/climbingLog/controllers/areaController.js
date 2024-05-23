@@ -33,7 +33,8 @@ exports.updateArea = [
 			const area = await findArea(req.params.id, req.user._id)
 
 			const newData = {
-				name: req.body.name
+				name: req.body.name,
+				steepnessTags: req.body.steepnessTags
 			}
 
 			const updatedArea = updateAreaData(area, newData);

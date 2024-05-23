@@ -10,6 +10,12 @@ const areaSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId, 
 		ref: 'User', 
 		required: true 
+	},
+	steepnessTags: { 
+		type: [String], 
+		enum: ['slab', 'vertical', 'overhung', 'roof'], 
+		required: false,
+		default: []
 	}
 }, {
 	toJSON: { virtuals: true },
