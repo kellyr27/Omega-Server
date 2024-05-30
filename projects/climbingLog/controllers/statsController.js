@@ -408,9 +408,6 @@ exports.getTickTypeStats = [
 			return obj;
 		}, {});
 
-		console.log(tickTypeCountsTotal, tickTypeCountsByGrade)
-
-
 
 
         res.status(200).json({ topAscents, tickTypeCountsTotal, tickTypeCountsByGrade });
