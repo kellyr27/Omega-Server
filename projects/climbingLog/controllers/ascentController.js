@@ -52,8 +52,7 @@ exports.getAscentById = [
             const ascent = await findAscent(req.params.id, req.user._id);
 			const populatedAscent = await populateAscent(ascent)
             const ascentObject = populatedAscent.toObject();
-            ascentObject.isOnlyAscent = onlyOneAscentRecordedOnRoute(ascent.route._id);
-
+            ascentObject.isOnlyAscent = await onlyOneAscentRecordedOnRoute(ascent.route._id);
             res.status(200).json(ascentObject);
         } catch (error) {
             next(error)
