@@ -42,3 +42,14 @@ exports.updateAreaData = (area, newData) => {
 	area.steepnessTags = newData.steepnessTags;
     return area;
 }
+
+exports.populateArea = async (area) => {
+	const populatedArea = await area.populate({
+		path: 'routes',
+		populate: {
+			path: 'ascents',
+			model: 'Ascent'
+		}
+	});
+	return populatedArea;
+}

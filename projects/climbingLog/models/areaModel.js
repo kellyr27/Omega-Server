@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const {getDatabaseConnection} = require('../config/database');
 
+
 const areaSchema = new mongoose.Schema({
 	name: { 
 		type: String, 
@@ -24,6 +25,13 @@ const areaSchema = new mongoose.Schema({
 });
 
 areaSchema.index({ name: 1, user: 1 }, { unique: true });
+
+areaSchema.virtual('routes', {
+    ref: 'Route',
+    localField: '_id',
+    foreignField: 'area',
+    justOne: false
+});
 
 const Area = getDatabaseConnection().model('Area', areaSchema);
 

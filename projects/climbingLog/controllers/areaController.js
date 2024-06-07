@@ -1,5 +1,5 @@
 const Area = require('../models/areaModel');
-const {findArea, updateAreaData} = require('../services/areaServices');
+const {findArea, updateAreaData, populateArea} = require('../services/areaServices');
 const areaSchema = require('../validators/areaValidator');
 const validateSchema = require('../middleware/validateSchema');
 
@@ -19,7 +19,9 @@ exports.getAreaById = [
 	async (req, res, next) => {
 		try {
 			const area = await findArea(req.params.id, req.user._id);
-			res.status(200).json(area)
+			const populatedArea = await populateArea(area);
+
+			res.status(200).json(populatedArea)
 		} catch (error) {
 			next(error)
 		}

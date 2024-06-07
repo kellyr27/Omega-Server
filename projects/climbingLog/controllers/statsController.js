@@ -288,7 +288,7 @@ exports.getAreaStats = [
 				const totalAscents = Object.values(gradeCounts).reduce((acc, curr) => acc + curr, 0);
 
 				return {
-					area: area.name,
+					area: area,
 					topAscents: topThreeAscents,
 					gradeCounts: gradeCounts,
 					totalAscents: totalAscents
