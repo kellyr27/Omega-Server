@@ -134,11 +134,22 @@ exports.getWeeklyStats = [
             // Get all ascents for the user
             const ascents = await Ascent.find({ user: req.user._id }).populate('route');
 
+			// Find earliest date recorded from the ascents
+			const earliestDate = ascents.reduce((earliest, ascent) => {
+				return new Date(ascent.date) < earliest ? new Date(ascent.date) : earliest;
+			}, new Date());
+
+			
+			// Find the Sunday prior to the earliest date (if it's not a Sunday)
+			const firstSunday = new Date(earliestDate);
+			firstSunday.setDate(firstSunday.getDate() - firstSunday.getDay());
+
+
             // For each ascent, assign a week number
             const ascentsWithWeeks = ascents.map(ascent => {
                 const date = new Date(ascent.date);
-                const week = Math.ceil((date - new Date(2024, 0, 1)) / 604800000);
-                
+                const week = Math.floor((date - firstSunday) / 604800000) + 1;
+
                 return {
                     ...ascent.toObject(),
                     week
