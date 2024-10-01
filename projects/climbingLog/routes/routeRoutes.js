@@ -13,5 +13,8 @@ router.route('/:id')
 router.route('/:id/ascents')
     .get(authenticate, ...routeController.getAscentsByRouteId);
 
+router.route('/:id/bookmark')
+    .post(authenticate, ...routeController.bookmarkRoute);
+
 
 module.exports = router;

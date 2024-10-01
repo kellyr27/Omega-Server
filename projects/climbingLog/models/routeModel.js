@@ -23,7 +23,11 @@ const routeSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId, 
 		ref: 'Area', 
 		required: false 
-	}
+	},
+    bookmarked: { 
+        type: Boolean, 
+        default: false 
+    },
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true },

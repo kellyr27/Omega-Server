@@ -90,3 +90,16 @@ exports.getAscentsByRouteId = [
         }
     }
 ]
+
+exports.bookmarkRoute = [
+    async (req, res, next) => {
+        try {
+            const route = await findRoute(req.params.id, req.user._id);
+            route.bookmarked = !route.bookmarked;
+            await route.save();
+            res.status(200).json(route);
+        } catch (error) {
+            next(error)
+        }
+    }
+]
